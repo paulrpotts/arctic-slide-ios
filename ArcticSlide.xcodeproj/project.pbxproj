@@ -24,6 +24,7 @@
 		DAC0A10E175E278C0095A0B9 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC0A0E6175E278C0095A0B9 /* Foundation.framework */; };
 		DAC0A116175E278C0095A0B9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DAC0A114175E278C0095A0B9 /* InfoPlist.strings */; };
 		DAC0A119175E278C0095A0B9 /* ArcticSlideTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC0A118175E278C0095A0B9 /* ArcticSlideTests.m */; };
+		DAC0A124175E6CE10095A0B9 /* ArcticSlideModel.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +61,8 @@
 		DAC0A115175E278C0095A0B9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DAC0A117175E278C0095A0B9 /* ArcticSlideTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ArcticSlideTests.h; sourceTree = "<group>"; };
 		DAC0A118175E278C0095A0B9 /* ArcticSlideTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ArcticSlideTests.m; sourceTree = "<group>"; };
+		DAC0A122175E6CE10095A0B9 /* ArcticSlideModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArcticSlideModel.h; sourceTree = "<group>"; };
+		DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArcticSlideModel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				DAC0A0FF175E278C0095A0B9 /* ArcticSlideViewController_iPhone.xib */,
 				DAC0A102175E278C0095A0B9 /* ArcticSlideViewController_iPad.xib */,
 				DAC0A0EB175E278C0095A0B9 /* Supporting Files */,
+				DAC0A122175E6CE10095A0B9 /* ArcticSlideModel.h */,
+				DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */,
 			);
 			path = ArcticSlide;
 			sourceTree = "<group>";
@@ -278,6 +283,7 @@
 				DAC0A0F1175E278C0095A0B9 /* main.m in Sources */,
 				DAC0A0F5175E278C0095A0B9 /* ArcticSlideAppDelegate.m in Sources */,
 				DAC0A0FE175E278C0095A0B9 /* ArcticSlideViewController.m in Sources */,
+				DAC0A124175E6CE10095A0B9 /* ArcticSlideModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

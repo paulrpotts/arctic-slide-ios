@@ -15,6 +15,11 @@
     [super setUp];
     
     // Set-up code here.
+    // ArcticSlideModel *model = [[ArcticSlideModel alloc] init];
+    // NSLog(@"%@", model);
+
+    ArcticSlideModel *model_from_level = [[ArcticSlideModel alloc] initWithLevelIndex:0];
+    NSLog(@"%@", model_from_level);   
 }
 
 - (void)tearDown

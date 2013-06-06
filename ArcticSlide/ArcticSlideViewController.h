@@ -10,4 +10,6 @@
 
 @interface ArcticSlideViewController : UIViewController
 
+-(id)init;
+
 @end

@@ -7,6 +7,7 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
+#import "ArcticSlideModel.h"
 
 @interface ArcticSlideTests : SenTestCase
 
