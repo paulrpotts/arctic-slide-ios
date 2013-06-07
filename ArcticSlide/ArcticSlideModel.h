@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 
 typedef struct {
-    int x_pos;
-    int y_pos;
+    int x_idx;
+    int y_idx;
 } pos_t;
 
 typedef enum {
@@ -20,6 +20,11 @@ typedef enum {
     dir_north
 } dir_e;
 
+// A straight C function to return a pos_t updated with a dir_e;
+// the result may be out of bounds
+pos_t getUpdatedPos( pos_t original_pos, dir_e dir );
+BOOL posValid( pos_t pos );
+
 static const int board_width = 24, board_height = 4;
 // The short board design is part of what makes it so easy to get
 // sliding objects stuck against the edges of the world or in corners
@@ -27,6 +32,7 @@ static const int board_width = 24, board_height = 4;
 // We could consider a bigger board later and maybe implement the
 // original puzzles surrounded by water, or something like that.
 
+// Equivalent of C++ class forward declaration
 @class ArcticSlideTile;
 @class ArcticSlideBomb;
 @class ArcticSlideEmpty;
@@ -41,6 +47,8 @@ static const int board_width = 24, board_height = 4;
     ArcticSlideTile* board[board_height][board_width];
 }
 
++ (ArcticSlideModel*)getModel;
+
 // Singleton factory methods
 - (ArcticSlideBomb*)getBomb;
 - (ArcticSlideEmpty*)getEmpty;
@@ -50,25 +58,18 @@ static const int board_width = 24, board_height = 4;
 - (ArcticSlideMountain*)getMountain;
 - (ArcticSlideTree*)getTree;
 
-@property pos_t penguin_pos;
-
 - (id)init;
 - (id)initWithLevelIndex:(int)level_idx;
 - (NSString*) description;
-- (ArcticSlideTile*)getTile:(pos_t)fromPosition :(dir_e)toDirection;
+- (ArcticSlideTile*)getTileFromPosition:(pos_t)pos inDirection:(dir_e)dir;
+- (void)setTileAtPosition:(pos_t)pos to:(ArcticSlideTile*)type;
 
 @end
 
 @interface ArcticSlideTile : NSObject
-{
-    ArcticSlideModel* __weak model;
-}
 
-// push is called when the penguin avatar ppushes on an instance of a tile
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
-
-// slide is called on the time tick after an item is successfully pushed
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
+// push is called when the penguin avatar pushes on an instance of a tile
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 
 @end
 
@@ -83,14 +84,13 @@ static const int board_width = 24, board_height = 4;
 // YES if the penguin can move onto the tile with this action. This
 // is only ever the case for an empty tile. The rest of the tile actions
 // are handled by callbacks to the board model
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
 @interface ArcticSlideEmpty : ArcticSlideTile
 // The penguin can always step onto an empty tile
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
@@ -98,8 +98,7 @@ static const int board_width = 24, board_height = 4;
 // When a heart hits a house the heart disappears (getting all the hearts into
 // the house is how you win the game). Otherwise they cannot be destroyed,
 // and slide like other slidable items.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
@@ -109,7 +108,7 @@ static const int board_width = 24, board_height = 4;
 // the house is how you win the game). So the model should keep track
 // of the number of hearts on the board and trigger a "win the level"
 // behavior when the last heart is destroyed.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
@@ -117,21 +116,20 @@ static const int board_width = 24, board_height = 4;
 // Ice blocks can be pushed and will slide until they hit an object
 // and stop. If they are pushed directly against an object they will
 // be crushed (there should be an animation) and disappear.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
 @interface ArcticSlideMountain : ArcticSlideTile
 // Mountains cannot be moved and are destroyed by bombs.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 
 @interface ArcticSlideTree : ArcticSlideTile
 // Trees cannot be pushed or destroyed and stop all sliding objects, but
 // the penguin avatar character can walk through them.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 

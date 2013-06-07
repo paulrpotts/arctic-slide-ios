@@ -9,92 +9,176 @@
 #import "ArcticSlideModel.h"
 #import "PolarBoards.h"
 
-@implementation ArcticSlideTile
+static ArcticSlideBomb* bomb_p;
+static ArcticSlideEmpty* empty_p;
+static ArcticSlideHeart* heart_p;
+static ArcticSlideHouse* house_p;
+static ArcticSlideIceBlock* ice_block_p;
+static ArcticSlideMountain* mountain_p;
+static ArcticSlideTree* tree_p;
+static ArcticSlideModel* model_p;
+
+pos_t getUpdatedPos( pos_t original_pos, dir_e dir )
 {
+    pos_t updated_pos = original_pos;
+    int x_offset = 0;
+    int y_offset = 0;
+    if ( dir_east == dir )
+    {
+        x_offset = 1;
+        y_offset = 0;
+    }
+    else if ( dir_west == dir )
+    {
+        x_offset = -1;
+        y_offset = 0;
+    }
+    else if ( dir_north == dir )
+    {
+        x_offset = 0;
+        y_offset = -1;
+    }
+    else if ( dir_south == dir )
+    {
+        x_offset = 0;
+        y_offset = +1;
+    }
+    updated_pos.x_idx += x_offset;;
+    updated_pos.y_idx += y_offset;
+    return updated_pos;
 }
 
+BOOL posValid( pos_t pos )
+{
+    return ( ( ( pos.x_idx >= 0 ) || ( pos.x_idx < board_width  ) ) ||
+             ( ( pos.y_idx >= 0 ) || ( pos.y_idx < board_height ) ) );
+}
+
+@implementation ArcticSlideTile
 // These versions in the base class should not be called; all instantiated
 // tile objects should have either overriden them or should have not been
 // send these messages.
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     NSLog(@"ArcticSlideTile slide method called!\n");
     // Don't let the penguin move onto this space
     return NO;
 }
 
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     NSLog(@"ArcticSlideTile slide method called!\n");
     // Don't let the piece keep moving
     return NO;
 }
 
+// Override alloc and init to prevent casual instantiation
+- (id)alloc
+{
+    NSLog(@"ArcticSlideTile alloc method called!\n");
+    return nil;
+}
+
+- (id)init
+{
+    NSLog(@"ArcticSlideTile init method called!\n");
+    return nil;
+}
+
+- (id)initWithModel:( ArcticSlideModel*)model_p
+{
+    return self;
+}
+
 @end
 
 @implementation ArcticSlideBomb
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( nil == tile )
+    // Penguin has pushed bomb in the given direction.
+    // Get our own position:
+    pos_t bomb_pos = getUpdatedPos( pos, dir );
+    // What are we being pushed into?
+    ArcticSlideTile *target_tile_p = [[ArcticSlideModel getModel]
+                                       getTileFromPosition:bomb_pos
+                                      inDirection:dir];
+    
+    if ( nil == target_tile_p )
     {
-        // there is nothing there -- we're pushing against
-        // the edge of the world. queue a fail beep
+        // Pushed into the edge of the world. TODO: queue fail sound effect
     }
-    if ( [model getMountain] == tile )
+    else if ( [[ArcticSlideModel getModel] getMountain] == target_tile_p )
     {
-        // bomb pushed into mountain
-        // animate bomb moving onto mountain
-        // animate explosion
-        // remove both bomb and mountain from board, update
-        // mountain tile
+        // bomb pushed into mountain; queue animation of bomb moving onto mountain, animate explosion
+        // remove bomb and mountain
+        pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
+        [[ArcticSlideModel getModel]
+         setTileAtPosition:new_bomb_pos
+         to:[[ArcticSlideModel getModel] getEmpty]];
+        new_bomb_pos = getUpdatedPos( new_bomb_pos, dir );
+        [[ArcticSlideModel getModel]
+         setTileAtPosition:new_bomb_pos
+         to:[[ArcticSlideModel getModel] getEmpty]];
     }
-    else if ( [model getEmpty] == tile )
+    else if ( [[ArcticSlideModel getModel] getEmpty] == target_tile_p )
     {
-        // animate bomb moving into space
-        // remove from old pos
-        // insert at new pos
-    }
-    // The penguin cannot actually move onto the position this round
-    return NO;
-}
+        // TODO: animate bomb moving into space
+        pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
+        // Set bomb at new position
+        [[ArcticSlideModel getModel]
+         setTileAtPosition:new_bomb_pos
+         to:[[ArcticSlideModel getModel] getBomb]];
+        // Remove bomb from old position
+        [[ArcticSlideModel getModel]
+         setTileAtPosition:bomb_pos
+         to:[[ArcticSlideModel getModel] getEmpty]];
 
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
-{
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( [model getEmpty] == tile )
-    {
-        // we can move onto this tile -- update the model with
-        // the new position
-        // return YES to indicate that we are still sliding
-        // and slide should be called again
-        return YES;
-    }
-    else
-    {
-        if ( [model getMountain] == tile )
+        // Bombs will slide until stopped
+        ArcticSlideTile *target_tile_p = [[ArcticSlideModel getModel]
+                                          getTileFromPosition:new_bomb_pos
+                                          inDirection:dir];
+
+        while ( [[ArcticSlideModel getModel] getEmpty] == target_tile_p )
         {
-            // bomb pushed into mountain
-            // animate bomb moving onto mountain
-            // animate explosion
-            // remove both bomb and mountain from board, update
-            // mountain tile
+            // bomb slid: animate bomb moving into space
+            pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
+            // set bomb at new position
+            [[ArcticSlideModel getModel]
+             setTileAtPosition:new_bomb_pos
+             to:[[ArcticSlideModel getModel] getBomb]];
+            // remove bomb from old position
+            [[ArcticSlideModel getModel]
+             setTileAtPosition:bomb_pos
+             to:[[ArcticSlideModel getModel] getEmpty]];
         }
-        // Bomb is done sliding
-        return NO;
+
+        if ( [[ArcticSlideModel getModel] getMountain] == target_tile_p )
+        {
+            // bomb pushed into mountain; queue animation of bomb moving onto mountain, animate explosion
+            // remove bomb and mountain
+            [[ArcticSlideModel getModel]
+             setTileAtPosition:new_bomb_pos
+             to:[[ArcticSlideModel getModel] getEmpty]];
+            new_bomb_pos = getUpdatedPos( new_bomb_pos, dir );
+            [[ArcticSlideModel getModel]
+             setTileAtPosition:new_bomb_pos
+             to:[[ArcticSlideModel getModel] getEmpty]];
+        }
     }
+    // The penguin cannot actually move where the bomb was
+    return NO;
 }
 
 - (NSString*) description
 {
-    return @"Bomb";
+    return @"Bomb  ";
 }
 
 @end
 
 @implementation ArcticSlideEmpty
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     // If the penguin pushes onto an empty tile, he can always
     // move there
@@ -103,28 +187,28 @@
 
 - (NSString*) description
 {
-    return @"Empty";
+    return @"      ";
 }
 @end
 
 @implementation ArcticSlideHeart
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( nil == tile )
+    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
+    if ( nil == tile_p )
     {
         // there is nothing there -- we're pushing against
         // the edge of the world. queue a fail beep
     }
-    else if ( [model getHouse] == tile )
+    else if ( [[ArcticSlideModel getModel] getHouse] == tile_p )
     {
         // heart pushed into home
         // animate heart moving onto home
         // happy sound, score goes up
         // remove heart, update heart tile
     }
-    else if ( [model getEmpty] == tile )
+    else if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
     {
         // animate bomb moving into space
         // remove from old pos
@@ -134,10 +218,10 @@
     return NO;
 }
 
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( [model getEmpty] == tile )
+    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
+    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
     {
         // we can move onto this tile -- update the model with
         // the new position
@@ -147,7 +231,7 @@
     }
     else
     {
-        if ( [model getHouse] == tile )
+        if ( [[ArcticSlideModel getModel] getHouse] == tile_p )
         {
             // heart pushed into home
             // animate heart moving onto home
@@ -161,14 +245,14 @@
 
 - (NSString*) description
 {
-    return @"Heart";
+    return @"Heart ";
 }
 
 @end
 
 @implementation ArcticSlideHouse
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     // Can't push the house. Queue a fail beep.
     // The penguin can't move there.
@@ -177,16 +261,16 @@
 
 - (NSString*) description
 {
-    return @"House";
+    return @"House ";
 }
 @end
 
 @implementation ArcticSlideIceBlock
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( [model getEmpty] == tile )
+    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
+    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
     {
         // an ice block can be slid onto an empty space
         // animate bomb moving into space
@@ -208,10 +292,10 @@
     return NO;
 }
 
-- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
-    if ( [model getEmpty] == tile )
+    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
+    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
     {
         // we can move onto this tile -- update the model with
         // the new position
@@ -233,14 +317,14 @@
 
 - (NSString*) description
 {
-    return @"Ice Block";
+    return @"Ice   ";
 }
 
 @end
 
 @implementation ArcticSlideMountain
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     // Can't push the house. Queue a fail beep.
     // The penguin can't move there.
@@ -249,14 +333,14 @@
 
 - (NSString*) description
 {
-    return @"Mountain";
+    return @"Mtn   ";
 }
 
 @end
 
 @implementation ArcticSlideTree
 
-- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
+- (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
     // The penguin can actually walk through trees
     // come up with a way to represent penguin-over-tree
@@ -266,38 +350,30 @@
 
 - (NSString*) description
 {
-    return @"Tree";
+    return @"Tree  ";
 }
 @end
 
 @implementation ArcticSlideModel
+
++ (id)getModel
 {
-    ArcticSlideBomb* bomb;
-    ArcticSlideEmpty* empty;
-    ArcticSlideHeart* heart;
-    ArcticSlideHouse* house;
-    ArcticSlideIceBlock* ice_block;
-    ArcticSlideMountain* mountain;
-    ArcticSlideTree* tree;
+    if ( nil == model_p )
+    {
+        model_p = [[ArcticSlideModel alloc] initWithLevelIndex:0];
+    }
+    return model_p;
 }
 
 - (id)init
 {
-    bomb = [[ArcticSlideBomb alloc] init];
-    empty = [[ArcticSlideEmpty alloc] init];
-    heart = [[ArcticSlideHeart alloc] init];
-    house = [[ArcticSlideHouse alloc] init];
-    ice_block = [[ArcticSlideIceBlock alloc] init];
-    mountain = [[ArcticSlideMountain alloc] init];
-    tree = [[ArcticSlideTree alloc] init];
-
     for ( unsigned int idx_y = 0;
          idx_y < board_height; idx_y++ )
     {
         for ( unsigned int idx_x = 0;
              idx_x < board_width; idx_x++ )
         {
-            board[idx_y][idx_x] = empty;
+            board[idx_y][idx_x] = [self getEmpty];
         }
     }
     return self;
@@ -305,65 +381,65 @@
 
 - (ArcticSlideBomb*)getBomb
 {
-    if ( nil == bomb )
+    if ( nil == bomb_p )
     {
-        bomb = [[ArcticSlideBomb alloc] init];
+        bomb_p = [[ArcticSlideBomb alloc] initWithModel:self];
     }
-    return bomb;
+    return bomb_p;
 }
 
 - (ArcticSlideEmpty*)getEmpty
 {
-    if ( nil == empty )
+    if ( nil == empty_p )
     {
-        empty = [[ArcticSlideEmpty alloc] init];
+        empty_p = [[ArcticSlideEmpty alloc] initWithModel:self];
     }
-    return empty;
+    return empty_p;
 }
 
 - (ArcticSlideHeart*)getHeart
 {
-    if ( nil == heart )
+    if ( nil == heart_p )
     {
-        heart = [[ArcticSlideHeart alloc] init];
+        heart_p = [[ArcticSlideHeart alloc] initWithModel:self];
     }
-    return heart;
+    return heart_p;
 }
 
 - (ArcticSlideHouse*)getHouse
 {
-    if ( nil == house )
+    if ( nil == house_p )
     {
-        house = [[ArcticSlideHouse alloc] init];
+        house_p = [[ArcticSlideHouse alloc] initWithModel:self];
     }
-    return house;
+    return house_p;
 }
 
 - (ArcticSlideIceBlock*)getIceBlock
 {
-    if ( nil == ice_block )
+    if ( nil == ice_block_p )
     {
-        ice_block = [[ArcticSlideIceBlock alloc] init];
+        ice_block_p = [[ArcticSlideIceBlock alloc] initWithModel:self];
     }
-    return ice_block;
+    return ice_block_p;
 }
 
 - (ArcticSlideMountain*)getMountain
 {
-    if ( nil == mountain )
+    if ( nil == mountain_p )
     {
-        mountain = [[ArcticSlideMountain alloc] init];
+        mountain_p = [[ArcticSlideMountain alloc] initWithModel:self];
     }
-    return mountain;
+    return mountain_p;
 }
 
 - (ArcticSlideTree*)getTree
 {
-    if ( nil == tree )
+    if ( nil == tree_p )
     {
-        tree = [[ArcticSlideTree alloc] init];
+        tree_p = [[ArcticSlideTree alloc] initWithModel:self];
     }
-    return tree;
+    return tree_p;
 }
 
 - (id)initWithLevelIndex:(int)level_idx
@@ -377,7 +453,9 @@
     // data as strings
     // Oy, after all these years, I still can't use a const int type for the array size!
     ArcticSlideTile *polar_data_tile_map[POLAR_DATA_NUM_TILE_VALS] = {
-        empty, tree, mountain, house, ice_block, heart, bomb };
+        [self getEmpty], [self getTree], [self getMountain], [self getHouse],
+        [self getIceBlock], [self getHeart], [self getBomb]
+    };
 
     if ( level_idx > ( num_polar_levels - 1) )
     {
@@ -413,9 +491,17 @@
 
 }
 
-- (ArcticSlideTile*)getTile:(pos_t)fromPosition :(dir_e)toDirection
+- (ArcticSlideTile*)getTileFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    return nil;
+    pos_t updated_pos = getUpdatedPos(pos, dir);
+    if ( posValid( updated_pos ) )
+    {
+        return board[updated_pos.y_idx][updated_pos.x_idx];
+    }
+    else
+    {
+        return nil;
+    }
 }
 
 - (NSString*)description
@@ -440,6 +526,11 @@
         [desc_str appendString:@"\n"];
     }
     return desc_str;
+}
+
+- (void)setTileAtPosition:(pos_t)pos to:(ArcticSlideTile*)type
+{
+    board[pos.y_idx][pos.x_idx] = type;
 }
 
 @end
