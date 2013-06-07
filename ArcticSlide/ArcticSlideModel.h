@@ -49,8 +49,6 @@ static const int board_width = 24, board_height = 4;
     ArcticSlideTile* board[board_height][board_width];
 }
 
-+ (ArcticSlideModel*)getModel;
-
 // Singleton factory methods
 - (ArcticSlideBomb*)getBomb;
 - (ArcticSlideEmpty*)getEmpty;
@@ -96,7 +94,6 @@ static const int board_width = 24, board_height = 4;
 @interface ArcticSlideEmpty : ArcticSlideTile
 // The penguin can always step onto an empty tile
 - (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
-- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 - (NSString*) description;
 @end
 

@@ -20,7 +20,7 @@ static ArcticSlideModel *model_p;
     // ArcticSlideModel *model = [[ArcticSlideModel alloc] init];
     // NSLog(@"%@", model);
 
-    model_p = [ArcticSlideModel getModel];
+    model_p = [[ArcticSlideModel alloc] initWithLevelIndex:0];
 }
 
 - (void)tearDown

@@ -60,15 +60,8 @@ BOOL posValid( pos_t pos )
 // send these messages.
 - (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    NSLog(@"ArcticSlideTile slide method called!\n");
+    NSLog(@"ArcticSlideTile push method called!\n");
     // Don't let the penguin move onto this space
-    return NO;
-}
-
-- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
-{
-    NSLog(@"ArcticSlideTile slide method called!\n");
-    // Don't let the piece keep moving
     return NO;
 }
 
@@ -101,80 +94,68 @@ BOOL posValid( pos_t pos )
     pos_t bomb_pos = getUpdatedPos( pos, dir );
     // What are we being pushed into?
     ArcticSlideTile *target_tile_p =
-    [[ArcticSlideModel getModel]
-     getTileFromPosition:bomb_pos
-     inDirection:dir];
+    [model_p getTileFromPosition:bomb_pos
+                     inDirection:dir];
     
     if ( nil == target_tile_p )
     {
         // Edge of the world. TODO:
         // queue a "boop" sound effect
     }
-    else if ( [[ArcticSlideModel getModel] getMountain]
-             == target_tile_p )
+    else if ( [model_p getMountain] == target_tile_p )
     {
         // bomb pushed into mountain
         // TODO: queue animation of bomb moving onto
         // mountain, animate explosion
         // remove bomb and mountain
         pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
-        [[ArcticSlideModel getModel]
-         setTileAtPosition:new_bomb_pos
-         to:[[ArcticSlideModel getModel] getEmpty]];
+        [model_p setTileAtPosition:new_bomb_pos
+                                to:[model_p getEmpty]];
         new_bomb_pos = getUpdatedPos( new_bomb_pos, dir );
-        [[ArcticSlideModel getModel]
-         setTileAtPosition:new_bomb_pos
-         to:[[ArcticSlideModel getModel] getEmpty]];
+        [model_p setTileAtPosition:new_bomb_pos
+                                to:[model_p getEmpty]];
     }
-    else if ( [[ArcticSlideModel getModel] getEmpty]
+    else if ( [model_p getEmpty]
              == target_tile_p )
     {
         // TODO: queue bomb moving into space
         pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
         // Set bomb at new position
-        [[ArcticSlideModel getModel]
-         setTileAtPosition:new_bomb_pos
-         to:[[ArcticSlideModel getModel] getBomb]];
+        [model_p setTileAtPosition:new_bomb_pos
+                                to:[model_p getBomb]];
         // Remove bomb from old position
-        [[ArcticSlideModel getModel]
-         setTileAtPosition:bomb_pos
-         to:[[ArcticSlideModel getModel] getEmpty]];
+        [model_p setTileAtPosition:bomb_pos
+                                to:[model_p getEmpty]];
 
         // Bombs will continue to slide until stopped
         ArcticSlideTile *target_tile_p =
-        [[ArcticSlideModel getModel]
-         getTileFromPosition:new_bomb_pos
-         inDirection:dir];
+        [model_p getTileFromPosition:new_bomb_pos
+                         inDirection:dir];
 
-        while ( [[ArcticSlideModel getModel] getEmpty]
-               == target_tile_p )
+        while ( [model_p getEmpty] == target_tile_p )
         {
             // TODO: animate bomb moving into space
             pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
             // set bomb at new position
-            [[ArcticSlideModel getModel]
-             setTileAtPosition:new_bomb_pos
-             to:[[ArcticSlideModel getModel] getBomb]];
+            [model_p setTileAtPosition:new_bomb_pos
+                                    to:[model_p getBomb]];
             // remove bomb from oald position
-            [[ArcticSlideModel getModel]
-             setTileAtPosition:bomb_pos
-             to:[[ArcticSlideModel getModel] getEmpty]];
+            [model_p setTileAtPosition:bomb_pos
+                                    to:[model_p getEmpty]];
         }
 
-        if ( [[ArcticSlideModel getModel] getMountain]
+        if ( [model_p getMountain]
             == target_tile_p )
         {
             // bomb pushed into mountain
             // TODO: queue animation of bomb moving
             // onto mountain, animate explosion
             // remove bomb and mountain
-            [[ArcticSlideModel getModel]
-             setTileAtPosition:new_bomb_pos
-             to:[[ArcticSlideModel getModel] getEmpty]];
+            [model_p setTileAtPosition:new_bomb_pos
+                                    to:[model_p getEmpty]];
             new_bomb_pos = getUpdatedPos( new_bomb_pos, dir );
-            [[ArcticSlideModel getModel]
-             setTileAtPosition:new_bomb_pos
-             to:[[ArcticSlideModel getModel] getEmpty]];
+            [model_p setTileAtPosition:new_bomb_pos
+                                    to:[model_p getEmpty]];
         }
     }
     // The penguin cannot actually move in this turn
@@ -206,20 +187,20 @@ BOOL posValid( pos_t pos )
 
 - (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
+    ArcticSlideTile *tile_p = [model_p getTileFromPosition:pos inDirection:dir];
     if ( nil == tile_p )
     {
         // there is nothing there -- we're pushing against
         // the edge of the world. queue a fail beep
     }
-    else if ( [[ArcticSlideModel getModel] getHouse] == tile_p )
+    else if ( [model_p getHouse] == tile_p )
     {
         // heart pushed into home
         // animate heart moving onto home
         // happy sound, score goes up
         // remove heart, update heart tile
     }
-    else if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
+    else if ( [model_p getEmpty] == tile_p )
     {
         // animate bomb moving into space
         // remove from old pos
@@ -227,31 +208,6 @@ BOOL posValid( pos_t pos )
     }
     // The penguin cannot actually move onto the position this round
     return NO;
-}
-
-- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
-{
-    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
-    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
-    {
-        // we can move onto this tile -- update the model with
-        // the new position
-        // return YES to indicate that we are still sliding
-        // and slide should be called again
-        return YES;
-    }
-    else
-    {
-        if ( [[ArcticSlideModel getModel] getHouse] == tile_p )
-        {
-            // heart pushed into home
-            // animate heart moving onto home
-            // happy sound, score goes up
-            // remove heart, update heart tile
-        }
-        // heart is done sliding
-        return NO;
-    }
 }
 
 - (NSString*) description
@@ -280,8 +236,8 @@ BOOL posValid( pos_t pos )
 
 - (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir
 {
-    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
-    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
+    ArcticSlideTile *tile_p = [model_p getTileFromPosition:pos inDirection:dir];
+    if ( [model_p getEmpty] == tile_p )
     {
         // an ice block can be slid onto an empty space
         // animate bomb moving into space
@@ -301,29 +257,6 @@ BOOL posValid( pos_t pos )
     }
     // The penguin cannot actually move onto the position this round
     return NO;
-}
-
-- (BOOL)slideFromPosition:(pos_t)pos inDirection:(dir_e)dir
-{
-    ArcticSlideTile *tile_p = [[ArcticSlideModel getModel] getTileFromPosition:pos inDirection:dir];
-    if ( [[ArcticSlideModel getModel] getEmpty] == tile_p )
-    {
-        // we can move onto this tile -- update the model with
-        // the new position
-        // return YES to indicate that we are still sliding
-        // and slide should be called again
-        return YES;
-    }
-    else
-    {
-        // pushing an ice block against anything else --
-        // edge of the world, or any other tile item --
-        // results in crushing the block
-        // queue a crumble animation
-        // then delete the ice block
-        // block is done sliding
-        return NO;
-    }
 }
 
 - (NSString*) description
@@ -366,15 +299,6 @@ BOOL posValid( pos_t pos )
 @end
 
 @implementation ArcticSlideModel
-
-+ (id)getModel
-{
-    if ( nil == model_p )
-    {
-        model_p = [[ArcticSlideModel alloc] initWithLevelIndex:0];
-    }
-    return model_p;
-}
 
 - (id)init
 {
