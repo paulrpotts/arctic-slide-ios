@@ -7,48 +7,42 @@
 //
 
 #import "ArcticSlideModel.h"
-
-// Get one up and running first
-static const int num_polar_levels = 1;
-static const int polar_data_len = 96;
-static const int polar_data_num_tile_vals = 7; // 0-6 inclusive
-static const int polar_data_max_tile_val = 6;
-// static const NSString *polar_levels[num_polar_levels] =
-// {
-//    @"100000000000000100000400" \
-//    @"106020545000000000100100" \
-//    @"100000000000000050002300" \
-//    @"110000100000000000000000"
-// };
-
-static const char *polar_levels[num_polar_levels] =
-{
-    "100000000000000100000400"
-    "106020545000000000100100"
-    "100000000000000050002300"
-    "110000100000000000000000"
-};
+#import "PolarBoards.h"
 
 @implementation ArcticSlideTile
 {
 }
-@end
 
-@implementation ArcticSlideTileStateless
+// These versions in the base class should not be called; all instantiated
+// tile objects should have either overriden them or should have not been
+// send these messages.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
 {
+    NSLog(@"ArcticSlideTile slide method called!\n");
+    // Don't let the penguin move onto this space
+    return NO;
 }
+
+- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
+{
+    NSLog(@"ArcticSlideTile slide method called!\n");
+    // Don't let the piece keep moving
+    return NO;
+}
+
 @end
 
 @implementation ArcticSlideBomb
+
 - (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
     if ( nil == tile )
     {
         // there is nothing there -- we're pushing against
         // the edge of the world. queue a fail beep
     }
-    if ( mountain == tile )
+    if ( [model getMountain] == tile )
     {
         // bomb pushed into mountain
         // animate bomb moving onto mountain
@@ -56,7 +50,7 @@ static const char *polar_levels[num_polar_levels] =
         // remove both bomb and mountain from board, update
         // mountain tile
     }
-    else if ( empty == tile )
+    else if ( [model getEmpty] == tile )
     {
         // animate bomb moving into space
         // remove from old pos
@@ -68,8 +62,8 @@ static const char *polar_levels[num_polar_levels] =
 
 - (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
-    if ( empty == tile )
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
+    if ( [model getEmpty] == tile )
     {
         // we can move onto this tile -- update the model with
         // the new position
@@ -79,7 +73,7 @@ static const char *polar_levels[num_polar_levels] =
     }
     else
     {
-        if ( mountain == tile )
+        if ( [model getMountain] == tile )
         {
             // bomb pushed into mountain
             // animate bomb moving onto mountain
@@ -117,20 +111,20 @@ static const char *polar_levels[num_polar_levels] =
 
 - (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
     if ( nil == tile )
     {
         // there is nothing there -- we're pushing against
         // the edge of the world. queue a fail beep
     }
-    else if ( home == tile )
+    else if ( [model getHouse] == tile )
     {
         // heart pushed into home
         // animate heart moving onto home
         // happy sound, score goes up
         // remove heart, update heart tile
     }
-    else if ( empty == tile )
+    else if ( [model getEmpty] == tile )
     {
         // animate bomb moving into space
         // remove from old pos
@@ -142,8 +136,8 @@ static const char *polar_levels[num_polar_levels] =
 
 - (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
-    if ( empty == tile )
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
+    if ( [model getEmpty] == tile )
     {
         // we can move onto this tile -- update the model with
         // the new position
@@ -153,7 +147,7 @@ static const char *polar_levels[num_polar_levels] =
     }
     else
     {
-        if ( home == tile )
+        if ( [model getHouse] == tile )
         {
             // heart pushed into home
             // animate heart moving onto home
@@ -191,8 +185,8 @@ static const char *polar_levels[num_polar_levels] =
 
 - (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
-    if ( empty == tile )
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
+    if ( [model getEmpty] == tile )
     {
         // an ice block can be slid onto an empty space
         // animate bomb moving into space
@@ -216,8 +210,8 @@ static const char *polar_levels[num_polar_levels] =
 
 - (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection
 {
-    ArcticSlideTile *tile = [board getTile:fromPosition:inDirection];
-    if ( empty == tile )
+    ArcticSlideTile *tile = [model getTile:fromPosition:inDirection];
+    if ( [model getEmpty] == tile )
     {
         // we can move onto this tile -- update the model with
         // the new position
@@ -260,13 +254,6 @@ static const char *polar_levels[num_polar_levels] =
 
 @end
 
-@implementation ArcticSlidePenguin
-- (NSString*) description
-{
-    return @"Mountain";
-}
-@end
-
 @implementation ArcticSlideTree
 
 - (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection
@@ -291,7 +278,6 @@ static const char *polar_levels[num_polar_levels] =
     ArcticSlideHouse* house;
     ArcticSlideIceBlock* ice_block;
     ArcticSlideMountain* mountain;
-    ArcticSlidePenguin* penguin;
     ArcticSlideTree* tree;
 }
 
@@ -303,7 +289,6 @@ static const char *polar_levels[num_polar_levels] =
     house = [[ArcticSlideHouse alloc] init];
     ice_block = [[ArcticSlideIceBlock alloc] init];
     mountain = [[ArcticSlideMountain alloc] init];
-    penguin = [[ArcticSlidePenguin alloc] init];
     tree = [[ArcticSlideTree alloc] init];
 
     for ( unsigned int idx_y = 0;
@@ -318,6 +303,69 @@ static const char *polar_levels[num_polar_levels] =
     return self;
 }
 
+- (ArcticSlideBomb*)getBomb
+{
+    if ( nil == bomb )
+    {
+        bomb = [[ArcticSlideBomb alloc] init];
+    }
+    return bomb;
+}
+
+- (ArcticSlideEmpty*)getEmpty
+{
+    if ( nil == empty )
+    {
+        empty = [[ArcticSlideEmpty alloc] init];
+    }
+    return empty;
+}
+
+- (ArcticSlideHeart*)getHeart
+{
+    if ( nil == heart )
+    {
+        heart = [[ArcticSlideHeart alloc] init];
+    }
+    return heart;
+}
+
+- (ArcticSlideHouse*)getHouse
+{
+    if ( nil == house )
+    {
+        house = [[ArcticSlideHouse alloc] init];
+    }
+    return house;
+}
+
+- (ArcticSlideIceBlock*)getIceBlock
+{
+    if ( nil == ice_block )
+    {
+        ice_block = [[ArcticSlideIceBlock alloc] init];
+    }
+    return ice_block;
+}
+
+- (ArcticSlideMountain*)getMountain
+{
+    if ( nil == mountain )
+    {
+        mountain = [[ArcticSlideMountain alloc] init];
+    }
+    return mountain;
+}
+
+- (ArcticSlideTree*)getTree
+{
+    if ( nil == tree )
+    {
+        tree = [[ArcticSlideTree alloc] init];
+    }
+    return tree;
+}
+
 - (id)initWithLevelIndex:(int)level_idx
 {
     // Call our own basic initializer. This will result in redundant
@@ -327,7 +375,8 @@ static const char *polar_levels[num_polar_levels] =
 
     // A simple lookup table to decode the original Polar resource
     // data as strings
-    ArcticSlideTile *polar_data_tile_map[polar_data_num_tile_vals] = {
+    // Oy, after all these years, I still can't use a const int type for the array size!
+    ArcticSlideTile *polar_data_tile_map[POLAR_DATA_NUM_TILE_VALS] = {
         empty, tree, mountain, house, ice_block, heart, bomb };
 
     if ( level_idx > ( num_polar_levels - 1) )
@@ -362,6 +411,11 @@ static const char *polar_levels[num_polar_levels] =
 
     return self;
 
+}
+
+- (ArcticSlideTile*)getTile:(pos_t)fromPosition :(dir_e)toDirection
+{
+    return nil;
 }
 
 - (NSString*)description
