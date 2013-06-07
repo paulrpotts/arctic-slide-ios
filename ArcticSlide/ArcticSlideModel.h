@@ -8,9 +8,25 @@
 
 #import <Foundation/Foundation.h>
 
+typedef struct {
+    int x_pos;
+    int y_pos;
+} pos_t;
+
+typedef enum {
+    dir_east,
+    dir_west,
+    dir_south,
+    dir_north
+} dir_e;
+
 @interface ArcticSlideTile : NSObject
 // Not necessarily useful yet, but I am guessing it might be helpful to
 // have a separate base class at some point.
+
+// slide is called on the time tick after an item is successfully
+// moved by pushing
+- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
 @end
 
 @interface ArcticSlideTileStateless : ArcticSlideTile
@@ -23,6 +39,13 @@
 // there should be an animation. If another object hits a bomb it stops
 // (I think -- I'm not sure it is possible to set up a board such that
 // you can slide something into a bomb).
+
+// push is called when the penguin pushes against a tile. It returns
+// YES if the penguin can move onto the tile with this action. This
+// is only ever the case for an empty tile. The rest of the tile actions
+// are handled by callbacks to the board model
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
@@ -32,6 +55,7 @@
 // there should be an animation. If another object hits a bomb it stops
 // (I think -- I'm not sure it is possible to set up a board such that
 // you can slide something into a bomb).
+- (void)push:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
@@ -39,6 +63,8 @@
 // When a heart hits a house the heart disappears (getting all the hearts into
 // the house is how you win the game). Otherwise they cannot be destroyed,
 // and slide like other slidable items.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
@@ -48,6 +74,7 @@
 // the house is how you win the game). So the model should keep track
 // of the number of hearts on the board and trigger a "win the level"
 // behavior when the last heart is destroyed.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
@@ -55,17 +82,16 @@
 // Ice blocks can be pushed and will slide until they hit an object
 // and stop. If they are pushed directly against an object they will
 // be crushed (there should be an animation) and disappear.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
+- (BOOL)slide:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
 @interface ArcticSlideMountain : ArcticSlideTileStateless
 // Mountains cannot be moved and are destroyed by bombs.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
-
-typedef enum {
-    north, south, east, west
-}penguinDir_e;
 
 @interface ArcticSlidePenguin : ArcticSlideTile
 // The penguin is the avatar. It has the special quality of being able
@@ -77,7 +103,7 @@ typedef enum {
 // implement this temporary state using using an "override" object
 // reference in the model. Sliding objects might be implemented the
 // same way.
-@property penguinDir_e penguin_dir;
+@property dir_e penguin_dir;
 
 - (NSString*) description;
 @end
@@ -85,6 +111,7 @@ typedef enum {
 @interface ArcticSlideTree : ArcticSlideTile
 // Trees cannot be pushed or destroyed and stop all sliding objects, but
 // the penguin avatar character can walk through them.
+- (BOOL)push:(pos_t)fromPosition :(dir_e)inDirection;
 - (NSString*) description;
 @end
 
@@ -94,11 +121,6 @@ static const int board_width = 24, board_height = 4;
 // where you can no longer get around to the other side to push them.
 // We could consider a bigger board later and maybe implement the
 // original puzzles surrounded by water, or something like that.
-
-typedef struct {
-    int x_pos;
-    int y_pos;
-} penguinPos_t;
 
 @interface ArcticSlideModel : NSObject
 {
@@ -200,11 +222,12 @@ typedef struct {
 // guessing I can confirm whether this is horizontal offset first
 // or vertical offset first if and when I get to that stage.
 
-@property penguinPos_t penguin_pos;
+@property pos_t penguin_pos;
 
 - (id)init;
 - (id)initWithLevelIndex:(int)level_idx;
 - (NSString*) description;
 
+- (ArcticSlideTile*)geNeighborTo:(dir_e)dir;
 @end
 
