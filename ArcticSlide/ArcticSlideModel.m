@@ -100,17 +100,22 @@ BOOL posValid( pos_t pos )
     // Get our own position:
     pos_t bomb_pos = getUpdatedPos( pos, dir );
     // What are we being pushed into?
-    ArcticSlideTile *target_tile_p = [[ArcticSlideModel getModel]
-                                       getTileFromPosition:bomb_pos
-                                      inDirection:dir];
+    ArcticSlideTile *target_tile_p =
+    [[ArcticSlideModel getModel]
+     getTileFromPosition:bomb_pos
+     inDirection:dir];
     
     if ( nil == target_tile_p )
     {
-        // Pushed into the edge of the world. TODO: queue fail sound effect
+        // Edge of the world. TODO:
+        // queue a "boop" sound effect
     }
-    else if ( [[ArcticSlideModel getModel] getMountain] == target_tile_p )
+    else if ( [[ArcticSlideModel getModel] getMountain]
+             == target_tile_p )
     {
-        // bomb pushed into mountain; queue animation of bomb moving onto mountain, animate explosion
+        // bomb pushed into mountain
+        // TODO: queue animation of bomb moving onto
+        // mountain, animate explosion
         // remove bomb and mountain
         pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
         [[ArcticSlideModel getModel]
@@ -121,9 +126,10 @@ BOOL posValid( pos_t pos )
          setTileAtPosition:new_bomb_pos
          to:[[ArcticSlideModel getModel] getEmpty]];
     }
-    else if ( [[ArcticSlideModel getModel] getEmpty] == target_tile_p )
+    else if ( [[ArcticSlideModel getModel] getEmpty]
+             == target_tile_p )
     {
-        // TODO: animate bomb moving into space
+        // TODO: queue bomb moving into space
         pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
         // Set bomb at new position
         [[ArcticSlideModel getModel]
@@ -134,28 +140,33 @@ BOOL posValid( pos_t pos )
          setTileAtPosition:bomb_pos
          to:[[ArcticSlideModel getModel] getEmpty]];
 
-        // Bombs will slide until stopped
-        ArcticSlideTile *target_tile_p = [[ArcticSlideModel getModel]
-                                          getTileFromPosition:new_bomb_pos
-                                          inDirection:dir];
+        // Bombs will continue to slide until stopped
+        ArcticSlideTile *target_tile_p =
+        [[ArcticSlideModel getModel]
+         getTileFromPosition:new_bomb_pos
+         inDirection:dir];
 
-        while ( [[ArcticSlideModel getModel] getEmpty] == target_tile_p )
+        while ( [[ArcticSlideModel getModel] getEmpty]
+               == target_tile_p )
         {
-            // bomb slid: animate bomb moving into space
+            // TODO: animate bomb moving into space
             pos_t new_bomb_pos = getUpdatedPos( bomb_pos, dir );
             // set bomb at new position
             [[ArcticSlideModel getModel]
              setTileAtPosition:new_bomb_pos
              to:[[ArcticSlideModel getModel] getBomb]];
-            // remove bomb from old position
+            // remove bomb from oald position
             [[ArcticSlideModel getModel]
              setTileAtPosition:bomb_pos
              to:[[ArcticSlideModel getModel] getEmpty]];
         }
 
-        if ( [[ArcticSlideModel getModel] getMountain] == target_tile_p )
+        if ( [[ArcticSlideModel getModel] getMountain]
+            == target_tile_p )
         {
-            // bomb pushed into mountain; queue animation of bomb moving onto mountain, animate explosion
+            // bomb pushed into mountain
+            // TODO: queue animation of bomb moving
+            // onto mountain, animate explosion
             // remove bomb and mountain
             [[ArcticSlideModel getModel]
              setTileAtPosition:new_bomb_pos
@@ -166,7 +177,7 @@ BOOL posValid( pos_t pos )
              to:[[ArcticSlideModel getModel] getEmpty]];
         }
     }
-    // The penguin cannot actually move where the bomb was
+    // The penguin cannot actually move in this turn
     return NO;
 }
 
