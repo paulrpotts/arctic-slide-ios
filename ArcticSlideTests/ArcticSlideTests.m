@@ -17,9 +17,6 @@ static ArcticSlideModel *model_p;
     [super setUp];
     
     // Set-up code here.
-    // ArcticSlideModel *model = [[ArcticSlideModel alloc] init];
-    // NSLog(@"%@", model);
-
     model_p = [[ArcticSlideModel alloc] initWithLevelIndex:0];
 }
 
