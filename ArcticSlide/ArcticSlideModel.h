@@ -49,15 +49,6 @@ static const int board_width = 24, board_height = 4;
     ArcticSlideTile* board[board_height][board_width];
 }
 
-// Singleton factory methods
-- (ArcticSlideBomb*)getBomb;
-- (ArcticSlideEmpty*)getEmpty;
-- (ArcticSlideHeart*)getHeart;
-- (ArcticSlideHouse*)getHouse;
-- (ArcticSlideIceBlock*)getIceBlock;
-- (ArcticSlideMountain*)getMountain;
-- (ArcticSlideTree*)getTree;
-
 - (id)init;
 - (id)initWithLevelIndex:(int)level_idx;
 - (NSString*) description;
@@ -70,8 +61,6 @@ static const int board_width = 24, board_height = 4;
 
 @interface ArcticSlideTile : NSObject
 
-// push is called when the penguin avatar pushes on an
-// instance of a tile
 - (BOOL)pushFromPosition:(pos_t)pos inDirection:(dir_e)dir;
 
 @end

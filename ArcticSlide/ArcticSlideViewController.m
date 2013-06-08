@@ -10,16 +10,12 @@
 #import "ArcticSlideModel.h"
 
 @interface ArcticSlideViewController ()
-{
-    ArcticSlideModel* model;
-}
 @end
 
 @implementation ArcticSlideViewController
 
 - (id)init
 {
-    model = [[ArcticSlideModel alloc] init];
     return self;
 }
 
