@@ -29,80 +29,237 @@ static ArcticSlideModel *model_p;
 
 - (void)testExample
 {
+    // SOLVE LEVEL 1
     NSLog(@"%@\n", model_p);
-    // Penguin starts at 0,0, on top of a tree
-    pos_t penguin_pos = { 0, 0 };
 
-    // Walk the penguin south onto another tree tile
-    ArcticSlideTile* tile_p =
-    [model_p getTileFromPosition:penguin_pos inDirection:dir_south];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    BOOL allowed = [tile_p pushFromPosition:penguin_pos
-                                inDirection:dir_south];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos
-                              inDirection:dir_south];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_south);
-    NSLog(@"Penguin is facing: %@\n", tile_p);
+    // MOVE 1
+    // turn E, walk E until we are adjacent to ice block (21 moves)
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
     
-    // Walk the penguin east onto an empty space
-    tile_p = [model_p getTileFromPosition:penguin_pos
-                              inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos
-                           inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos
-                              inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // walk around ice block so we're on the right of it
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
 
-    // Try walking into a bomb, which should slide
-    // and blow up a mountain
-    tile_p = [model_p getTileFromPosition:penguin_pos
-                              inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos
-                           inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
+    // face west and push ice block, it should slide into tree
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    
+    NSLog(@"%@\n", model_p);
+
+    // MOVE 2
+    // go push the rightmost heart up into the ice block
+    // turn S, walk S
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+
+    // turn W, walk until we're under the heart
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+
+    // turn N, push the heart
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
 
     NSLog(@"%@\n", model_p);
 
-    // Bomb should be gone, we can walk all the way to heart
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // MOVE 3
+    // manuever bomb into bottom left corner by trees,
+    // get around it and push it left to blow up mountain
+    // next to house
+    
+    // turn W, walk W
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
 
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // turn N, walk N until we are E of bomb
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
 
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // slide bomb west into trees
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
 
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // go approach it from N and push S into trees
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
 
-    // Next to a heart
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin is facing: %@\n", tile_p);
-    allowed = [tile_p pushFromPosition:penguin_pos inDirection:dir_east];
-    NSLog(@"Penguin allowed: %s\n", ( allowed ? "YES" : "NO" ) );
-    tile_p = [model_p getTileFromPosition:penguin_pos inDirection:dir_east];
-    penguin_pos = getUpdatedPos(penguin_pos, dir_east);
+    // push it S
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+
+    // walk through trees to get to W of bomb, push it E,
+    // it should blow up mtn next to house
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+
+    NSLog(@"%@\n", model_p);
+
+    // MOVE 4
+    // knock ice block down from between two
+    // hearts on left side of board
+    // Get into position:
+
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+
+    NSLog(@"%@\n", model_p);
+
+    // MOVE 5
+    // knock middle heart left (into left heart),
+    // down into ice block, then right into home
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    NSLog(@"%@\n", model_p);
+
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    NSLog(@"%@\n", model_p);
+
+    // MOVE 6
+    // do the same for the rightmost heart
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    NSLog(@"%@\n", model_p);
+
+    // MOVE 7 and leftmost heart
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_north];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_west];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_south];
+    [model_p penguinMove:dir_east];
+    [model_p penguinMove:dir_east];
+
+    NSLog(@"%@\n", model_p);
 
 }
 

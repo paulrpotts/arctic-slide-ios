@@ -11,6 +11,13 @@
 const int num_polar_levels = 1;
 const int polar_data_len = 96;
 const int polar_data_max_tile_val = POLAR_DATA_NUM_TILE_VALS - 1;
+const char polar_tile_empty_val = '0';
+const char polar_tile_tree_val = '1';
+const char polar_tile_mountain_val = '2';
+const char polar_tile_house_val = '3';
+const char polar_tile_ice_block_val = '3';
+const char polar_tile_heart_val = '5';
+const char polar_tile_bomb_val = '6';
 
 // Level layouts are taken from the original Macintosh Polar game
 // created by Go Endo. These were originally MacOS resources of
