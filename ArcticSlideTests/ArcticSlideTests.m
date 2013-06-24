@@ -5,6 +5,11 @@
 //  Created by Paul R. Potts on 6/4/13.
 //  Copyright (c) 2013 Paul R. Potts. All rights reserved.
 //
+// Width guides for code to be formatted for Blogger: 67 chars for 860 px,
+// (my previous template), 80 chars for 960 px (my current template).
+//
+//34567890123456789012345678901234567890123456789012345678901234567
+//345678901234567890123456789012345678901234567890123456789012345678901234567890
 
 #import "ArcticSlideTests.h"
 

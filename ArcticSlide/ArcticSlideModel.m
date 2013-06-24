@@ -5,6 +5,11 @@
 //  Created by Paul R. Potts on 6/4/13.
 //  Copyright (c) 2013 Paul R. Potts. All rights reserved.
 //
+// Width guides for code to be formatted for Blogger: 67 chars for 860 px,
+// (my previous template), 80 chars for 960 px (my current template).
+//
+//34567890123456789012345678901234567890123456789012345678901234567
+//345678901234567890123456789012345678901234567890123456789012345678901234567890
 
 #import "ArcticSlideModel.h"
 #import "PolarBoards.h"
@@ -47,9 +52,9 @@ pos_t getAdjacentPos( pos_t original_pos, dir_e dir )
 BOOL posValid( pos_t pos )
 {
     return ( ( ( pos.y_idx >= 0 ) &&
-               ( pos.y_idx < board_height  ) ) &&
+               ( pos.y_idx < POLAR_DATA_LEN_Y  ) ) &&
              ( ( pos.x_idx >= 0 ) &&
-               ( pos.x_idx < board_width ) ) );
+               ( pos.x_idx < POLAR_DATA_LEN_X ) ) );
 }
 
 NSString *dirToString( dir_e dir )
@@ -85,12 +90,12 @@ NSString *dirToString( dir_e dir )
     heartCount = 3;
 
     for ( unsigned int idx_y = 0;
-         idx_y < board_height; idx_y++ )
+          idx_y < POLAR_DATA_LEN_Y; idx_y++ )
     {
         for ( unsigned int idx_x = 0;
-             idx_x < board_width; idx_x++ )
+              idx_x < POLAR_DATA_LEN_X; idx_x++ )
         {
-            board[idx_y][idx_x] = nil;
+            board[idx_y][idx_x] = polar_tile_empty;
         }
     }
     
@@ -109,90 +114,20 @@ NSString *dirToString( dir_e dir )
     }
     else
     {
-        unsigned int level_data_idx = 0;
         for ( unsigned int idx_y = 0;
-             idx_y < board_height; idx_y++ )
+              idx_y < POLAR_DATA_LEN_Y; idx_y++ )
         {
             for ( unsigned int idx_x = 0;
-                 idx_x < board_width; idx_x++ )
+                  idx_x < POLAR_DATA_LEN_X; idx_x++ )
             {
-                int polar_data_tile_val =
-                    polar_levels[level_idx][level_data_idx];
-                pos_t new_pos = { idx_y, idx_x };
-                switch ( polar_data_tile_val )
-                {
-                    case POLAR_TILE_EMPTY:
-                        board[idx_y][idx_x] = [[ArcticSlideEmpty alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_TREE:
-                        board[idx_y][idx_x] = [[ArcticSlideTree alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_MOUNTAIN:
-                        board[idx_y][idx_x] = [[ArcticSlideMountain alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_HOUSE:
-                        board[idx_y][idx_x] = [[ArcticSlideHouse alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_ICE_BLOCK:
-                        board[idx_y][idx_x] = [[ArcticSlideIceBlock alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_HEART:
-                        board[idx_y][idx_x] = [[ArcticSlideHeart alloc] initWithPos:new_pos];
-                        break;
-                    case POLAR_TILE_BOMB:
-                        board[idx_y][idx_x] = [[ArcticSlideBomb alloc] initWithPos:new_pos];
-                        break;
-                    default:
-                        NSLog(@"Tile value %d is not a known Polar tile value!\n",
-                              polar_data_tile_val );
-                        board[idx_y][idx_x] = nil;
-                        break;
-                }
-                level_data_idx++;
+                board[idx_y][idx_x] =
+                    polar_levels[level_idx][idx_y][idx_x];
             }
         }
     }
     
     return self;
     
-}
-
-- (ArcticSlideTile*)getTileAdjacentToPos:(pos_t)pos
-                                     due:(dir_e)dir
-{
-    pos_t updated_pos = getAdjacentPos(pos, dir);
-    if ( posValid( updated_pos ) )
-    {
-        return board[updated_pos.y_idx][updated_pos.x_idx];
-    }
-    else
-    {
-        return nil;
-    }
-}
-
-- (ArcticSlideTile*)getTileAdjacentToPenguinDue:(dir_e)dir
-{
-    return [self getTileAdjacentToPos:[self penguinPos]
-                                       due:dir];
-}
-
-- (NSString*)description
-{
-    NSMutableString *desc_str =[[NSMutableString alloc]init];
-    
-    [desc_str appendString:@"ArcticSlideModel board state:\n"];
-    for ( unsigned int idx_y = 0;
-         idx_y < board_height; idx_y++ )
-    {
-        for ( unsigned int idx_x = 0;
-             idx_x < board_width; idx_x++ )
-        {
-            [desc_str appendString:[board[idx_y][idx_x] description]];
-        }
-        [desc_str appendString:@"\n"];
-    }
-    return desc_str;
 }
 
 - (pos_t)penguinPos
@@ -203,6 +138,38 @@ NSString *dirToString( dir_e dir )
 - (int)heartCount
 {
     return self->heartCount;
+}
+
+- (tile_t)getTileAtPos:(pos_t)pos
+{
+    if ( posValid( pos ) )
+    {
+        return self->board[pos.y_idx][pos.x_idx];
+    }
+    else
+    {
+        return polar_tile_edge;
+    }
+}
+
+- (tile_t)getTileAdjacentToPenguinDue:(dir_e)dir
+{
+    return [self getTileAdjacentToPos:[self penguinPos]
+                                  due:dir];
+}
+
+- (tile_t)getTileAdjacentToPos:(pos_t)pos
+                           due:(dir_e)dir
+{
+    pos_t adjacent_pos = getAdjacentPos(pos, dir);
+    if ( posValid( adjacent_pos ) )
+    {
+        return board[adjacent_pos.y_idx][adjacent_pos.x_idx];
+    }
+    else
+    {
+        return polar_tile_edge;
+    }
 }
 
 - (void)setPenguinPos:(pos_t)pos
@@ -222,26 +189,308 @@ NSString *dirToString( dir_e dir )
     }
 }
 
-- (BOOL)penguinPushDue:(dir_e)dir
+- (void)setTile:(tile_t)tile
+          AtPos:(pos_t)pos
 {
-    // Start what could be a cascade of events. Get the
-    // tile the penguin is pushing against and determine
-    // what to do from there.
-    ArcticSlideTile *pushed_tile_p =
-        [self getTileAdjacentToPenguinDue:dir];
-    if ( pushed_tile_p )
+    if ( NO == posValid( pos ) )
     {
-        NSLog( @"penguinPush: tile at %d, %d pushed",
-              [pushed_tile_p pos].y_idx,
-              [pushed_tile_p pos].x_idx );
-        return [pushed_tile_p pushMeDue:dir
-                              withModel:self ];
+        NSLog( @"setTile: called at pos %d, %d (invalid)\n",
+               pos.y_idx, pos.x_idx );
+    }
+    else if ( polar_tile_edge == tile )
+    {
+        NSLog( @"setTile: called at pos %d, %d with edge\n",
+               pos.y_idx, pos.x_idx );
     }
     else
     {
-        NSLog(@"penguinPush: useless push against board edge");
-        return NO;
+        self->board[pos.y_idx][pos.x_idx] = tile;
     }
+   
+}
+
+- (NSString*)description
+{
+    static NSString *empty_str_p = @"____";
+    static NSString *tree_str_p = @"tre ";
+    static NSString *mountain_str_p = @"mtn ";
+    static NSString *house_str_p = @"hou ";
+    static NSString *ice_block_str_p = @"ice ";
+    static NSString *heart_str_p = @"hea ";
+    static NSString *bomb_str_p = @"bom ";
+    static NSString *unknown_str_p = @"??? ";
+    
+    NSMutableString *desc_str =[[NSMutableString alloc]init];
+    [desc_str appendString:@"ArcticSlideModel board state:\n"];
+    for ( unsigned int idx_y = 0;
+         idx_y < POLAR_DATA_LEN_Y; idx_y++ )
+    {
+        for ( unsigned int idx_x = 0;
+             idx_x < POLAR_DATA_LEN_X; idx_x++ )
+        {
+            NSString *tile_str_p = unknown_str_p;
+            switch ( self->board[idx_y][idx_x] )
+            {
+                case polar_tile_empty:
+                    tile_str_p = empty_str_p;
+                    break;
+                case polar_tile_tree:
+                    tile_str_p = tree_str_p;
+                    break;
+                case polar_tile_mountain:
+                    tile_str_p = mountain_str_p;
+                    break;
+                case polar_tile_house:
+                    tile_str_p = house_str_p;
+                    break;
+                case polar_tile_ice_block:
+                    tile_str_p = ice_block_str_p;
+                    break;
+                case polar_tile_heart:
+                    tile_str_p = heart_str_p;
+                    break;
+                case polar_tile_bomb:
+                    tile_str_p = bomb_str_p;
+                    break;
+                default:
+                    break;
+            }
+            [ desc_str appendString:tile_str_p ];
+        }
+        [ desc_str appendString:@"\n" ];
+    }
+    return desc_str;
+}
+
+- (void)queueTransition:(NSString*)str_p
+{
+    NSLog( @"%@", str_p );
+}
+
+// slideTile handles movable tiles moving, updating the board
+// as they go. For any movable tile and empty tile, we move
+// the piece and call slide again. For the generic movable
+// tile and any other tile case, we call collide, because
+// the interaction of bomb/mountain and heart/house are the
+// same whether it is the result of a direct push or takes
+// place after a slide. slide for an ice block is a special
+// case: the ice block is not destroyed after a slide, it
+// just stops. In the Dylan implementation we rely on runtime
+// dispatch to handle dispatch depending on two different
+// class type values in order from most to least specific;
+// in Objective-C we use explicit branching logic.
+- (void)slideTile:(tile_t)first_tile
+            atPos:(pos_t)first_pos
+              due:(dir_e)dir
+           toTile:(tile_t)second_tile
+      atSecondPos:(pos_t)second_pos
+{
+    BOOL empty = ( second_tile == polar_tile_empty );
+    /* Blocking includes the special edge tile value */
+    BOOL blocking = ( second_tile != polar_tile_empty );
+    
+    BOOL ice_block = ( first_tile == polar_tile_ice_block );
+    BOOL movable = ( ice_block ||
+                     first_tile == polar_tile_bomb ||
+                     first_tile == polar_tile_heart );
+
+    if ( ice_block && blocking )
+    {
+        // A specific movable tile, ice-block, meets a
+        // blocking tile; don't call collide since the behavior
+        // of a sliding ice block is different than a pushed ice
+        // block. It just stops and doesn't break.
+        NSLog( @"slideTile: ice block / blocking\n" );       
+    }
+    else if ( movable && empty )
+    {
+        // A movable tile interacting with an empty tile --
+        // move forward on the board and call slide again.
+        NSLog( @"slideTile: movable / empty\n" );
+
+        // Recursive Implementation:
+#if 0
+        pos_t third_pos = getAdjacentPos( second_pos, dir );
+        tile_t third_tile = [ self getTileAtPos:third_pos ];
+        [ self setTile:polar_tile_empty AtPos:first_pos ];
+        [ self setTile:first_tile AtPos:second_pos ];
+        [ self slideTile:first_tile atPos:second_pos due:dir
+                  toTile:third_tile atSecondPos:third_pos ];
+#endif
+        // Iterative: if we need to avoid possibly calling
+        // ourselves up to 23 times
+#if 1
+        while ( NO == blocking )
+        {
+            pos_t third_pos = getAdjacentPos( second_pos, dir );
+            tile_t third_tile = [ self getTileAtPos:third_pos ];
+            [ self setTile:polar_tile_empty AtPos:first_pos ];
+            [ self setTile:first_tile AtPos:second_pos ];
+            first_pos = second_pos;
+            second_pos = third_pos;
+            second_tile = third_tile;
+            blocking = ( third_tile != polar_tile_empty );
+        }
+        if ( ice_block )
+        {
+            NSLog( @"slideTile: ice block / blocking\n" );
+        }
+        else
+        {
+            NSLog( @"slideTile: movable / blocking\n" );
+            [ self collideTile:first_tile atPos:first_pos due:dir
+                      withTile:second_tile atSecondPos:second_pos ];
+        }        
+#endif
+    }
+    else if ( movable && blocking )
+    {
+        // A movable tile meets a blocking tile: call collide to
+        // handle heart/house, bomb/mountain, edge of world, etc.
+        NSLog( @"slideTile: movable / blocking\n" );
+        [ self collideTile:first_tile atPos:first_pos due:dir
+                  withTile:second_tile atSecondPos:second_pos ];
+    }
+}
+
+// collideTile represents the pushed or sliding tile interacting
+// with another tile. In the Dylan implementation we used a generic
+// function and five methods with some overlap in types, assuming
+// the runtime could figure out the most specific matching method
+// to call. In Objective-C we do our own explicit dispatch.
+- (void)collideTile:(tile_t)first_tile
+              atPos:(pos_t)first_pos
+                due:(dir_e)dir
+           withTile:(tile_t)second_tile
+        atSecondPos:(pos_t)second_pos
+{
+    BOOL empty = ( second_tile == polar_tile_empty );
+    /* Blocking includes the special edge tile value */
+    BOOL blocking = ( second_tile != polar_tile_empty );
+    BOOL mountain = ( second_tile == polar_tile_mountain );
+    BOOL house = ( second_tile == polar_tile_house );
+
+    BOOL ice_block = ( first_tile == polar_tile_ice_block );
+    BOOL bomb = ( first_tile == polar_tile_bomb );
+    BOOL heart = ( first_tile == polar_tile_heart );
+    BOOL movable = ( ice_block || bomb || heart );
+
+    if ( bomb && mountain )
+    {
+        /*
+            When a bomb meets a mountain, both bomb and mountain blow up
+        */
+        NSLog( @"collideTile: bomb / mountain\n" );
+        [ self setTile:polar_tile_empty AtPos:first_pos ];
+        [ self setTile:polar_tile_empty AtPos:second_pos ];
+    }
+    else if ( heart && house )
+    {
+        /*
+            When a bomb heart meets a house, we are closer to winning
+        */
+        NSLog( @"collideTile: heart / house\n" );
+        [ self setTile:polar_tile_empty AtPos:first_pos ];
+        [ self decrementHeartCount ];
+    }
+    else if ( ice_block && blocking )
+    {
+        /*
+            When an ice block is pushed directly against any
+            blocking tile (including the board edge), it is destroyed.
+        */
+        NSLog( @"collideTile: ice block / blocking\n" );
+        [ self setTile:polar_tile_empty AtPos:first_pos ];
+    }
+    else if ( movable )
+    {
+        if ( empty )
+        {
+            /*
+                A movable tile pushed onto an empty tile will slide
+            */
+            NSLog( @"collideTile: movable / empty: start slide\n" );
+            [ self slideTile:first_tile atPos:first_pos due:dir
+                   toTile:second_tile atSecondPos:second_pos ];
+        }
+        else if ( blocking )
+        {
+            /*
+                When a generic movable piece meets any other
+                blocking pieces not handled by a special case
+                above, nothig happens; it stops. Maybe play
+                a "fail" beep.
+            */
+            NSLog( @"collideTile: movable / blocking\n" );
+        }
+    }
+}
+
+// pushTile represents the penguin (player avatar) pushing a tile.
+// In the Dylan implementation, we used a generic function and
+// specialized on 3 distinct abstract subclasses of our tile class.
+// Here we do our own explicit dispatch.
+- (BOOL)pushTile:(tile_t)target_tile
+             due:(dir_e)dir
+              at:(pos_t)target_pos
+{
+    switch ( target_tile )
+    {
+        /*
+            Handle the "walkable" cases. The penguin is allowed to move
+            onto these tiles, indicated by returning YES
+        */
+        case polar_tile_empty: /* FALL THROUGH */
+        case polar_tile_tree:
+            NSLog( @"pushTile: walkable\n" );
+            self->penguinPos = target_pos;
+            return YES;
+
+        /*
+            Handle "movable" cases. Call collide which specializes in
+            various combinations.
+        */
+        case polar_tile_bomb:      /* FALL THROUGH */
+        case polar_tile_heart:     /* FALL THROUGH */
+        case polar_tile_ice_block:
+            NSLog( @"pushTile: movable\n" );
+            {
+                pos_t next_pos = getAdjacentPos( target_pos, dir );
+                /*
+                    Note that next-pos can be invalid, which results
+                    in the special "edge" tile value.
+                */
+                tile_t next_tile = [ self getTileAtPos:next_pos ];
+                [ self collideTile:target_tile atPos:target_pos
+                    due:dir withTile:next_tile
+                    atSecondPos:next_pos ];
+            }
+            return NO;
+
+        /*
+            Handle "fixed" cases. Do nothing; the GUI might play
+            a "fail" beep.
+        */
+        case polar_tile_mountain:   /* FALL THROUGH */
+        case polar_tile_house:
+            NSLog( @"pushTile: fixed\n" );
+            return NO;
+
+        default:
+            NSLog( @"pushTile: unexpected tile value %d\n",
+                   target_tile );
+            return NO;
+    }
+}
+
+- (BOOL)penguinPushDue:(dir_e)dir
+{
+    pos_t pushed_tile_pos = getAdjacentPos( self->penguinPos, dir );
+    tile_t pushed_tile = [ self getTileAtPos:pushed_tile_pos ];
+    NSLog( @"penguinPush: tile at %d, %d pushed",
+           pushed_tile_pos.y_idx,
+           pushed_tile_pos.x_idx );
+    return [ self pushTile:pushed_tile due:dir at:pushed_tile_pos ];
 }
 
 - (void)penguinMoveDue:(dir_e)dir
@@ -258,10 +507,8 @@ NSString *dirToString( dir_e dir )
                dirToString( dir ) );
         if ( [self penguinPushDue:penguinDir ] )
         {
-            pos_t new_penguin_pos = getAdjacentPos( [self penguinPos], dir );
-            [self setPenguinPos:new_penguin_pos];
-            NSLog( @"Penguin position updated to: %d, %d",
-                   new_penguin_pos.y_idx, new_penguin_pos.x_idx );
+            NSLog( @"Penguin moved to: %d, %d",
+                   self->penguinPos.y_idx, self->penguinPos.x_idx );
         }
         if ( 0 == [self heartCount] )
         {
@@ -274,505 +521,10 @@ NSString *dirToString( dir_e dir )
 - (void)penguinMoveNTimes:(int)n
                       due:(dir_e)dir
 {
-    NSLog( @"penguinMove:%@ nTimes:%d",
-           dirToString( dir ), n );
     for (int move_count = 0; move_count < n; move_count++ )
     {
         [ self penguinMoveDue:dir ];
     }
 }
 
-- (ArcticSlideTile*)setBombAt:(pos_t)pos
-{
-    ArcticSlideTile *bomb_p =
-        [[ArcticSlideBomb alloc] initWithPos:pos];
-    board[pos.y_idx][pos.x_idx] = bomb_p;
-    return bomb_p;
-}
-
-- (ArcticSlideTile*)setHeartAt:(pos_t)pos
-{
-    ArcticSlideTile *heart_p =
-        [[ArcticSlideHeart alloc] initWithPos:pos];
-    board[pos.y_idx][pos.x_idx] = heart_p;
-    return heart_p;
-}
-
-- (ArcticSlideTile*)setIceBlockAt:(pos_t)pos
-{
-    ArcticSlideTile *ice_block_p =
-        [[ArcticSlideIceBlock alloc] initWithPos:pos];
-    board[pos.y_idx][pos.x_idx] = ice_block_p;
-    return ice_block_p;
-}
-
-- (ArcticSlideTile*)setEmptyAt:(pos_t)pos
-{
-    ArcticSlideTile *empty_p =
-        [[ArcticSlideEmpty alloc] initWithPos:pos];
-    board[pos.y_idx][pos.x_idx] = empty_p;
-    return empty_p;
-}
-
-// Call to initiate a slide, updating the board as we go;
-// returns the tile that stops the slide; updates bomb
-- (ArcticSlideTile*)slideBomb:(ArcticSlideBomb**)bomb_p_p
-                          due:(dir_e)dir
-                    withModel:(ArcticSlideModel*)model_p
-{
-    ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*bomb_p_p;
-    ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPos:[*bomb_p_p pos]
-                                       due:dir];
-
-    if ( [next_tile_p is_sliding_accessible ] )
-    {
-        do
-        {
-            [model_p queueTransition:@"bomb slid"];
-            
-            // next tile becomes bomb
-            next_tile_p = [model_p setBombAt:[next_tile_p pos]];
-            
-            // bomb tile becomes empty; set to new bomb tile
-            prev_tile_p = [model_p setEmptyAt:[prev_tile_p pos]];
-            
-            // move along
-            prev_tile_p = next_tile_p;
-            next_tile_p =
-            [model_p getTileAdjacentToPos:[next_tile_p pos]
-                                           due:dir];
-        }
-        while ( [next_tile_p is_sliding_accessible ] );
-
-        *bomb_p_p = (ArcticSlideBomb*)prev_tile_p;
-    }
-    return next_tile_p;
-}
-
-// Call to initiate a slide, updating the board as we go;
-// returns the tile that stops the slide; updates heart
-- (ArcticSlideTile*)slideHeart:(ArcticSlideHeart**)heart_p_p
-                           due:(dir_e)dir
-                    withModel:(ArcticSlideModel*)model_p
-{
-    ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*heart_p_p;
-    ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPos:[*heart_p_p pos]
-                                   due:dir];
-    
-    if ( [next_tile_p is_sliding_accessible ] )
-    {
-        do
-        {
-            [model_p queueTransition:@"heart slid"];
-            
-            // next tile becomes heart
-            next_tile_p = [model_p setHeartAt:[next_tile_p pos]];
-            
-            // heart tile becomes empty; set to new heart tile
-            prev_tile_p = [model_p setEmptyAt:[prev_tile_p pos]];
-            
-            // move along
-            prev_tile_p = next_tile_p;
-            next_tile_p =
-            [model_p getTileAdjacentToPos:[next_tile_p pos]
-                                           due:dir];
-        }
-        while ( [next_tile_p is_sliding_accessible ] );
-        
-        *heart_p_p = (ArcticSlideHeart*)prev_tile_p;
-    }
-    return next_tile_p;
-}
-
-// Call to initiate a slide, updating the board as we go;
-// returns the tile that stops the slide; updates heart
-- (ArcticSlideTile*)slideIceBlock:(ArcticSlideIceBlock**)ice_block_p_p
-                              due:(dir_e)dir
-                        withModel:(ArcticSlideModel *)model_p
-{
-    ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*ice_block_p_p;
-    ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPos:[*ice_block_p_p pos]
-                                   due:dir];
-    
-    if ( [next_tile_p is_sliding_accessible ] )
-    {
-        do
-        {
-            [model_p queueTransition:@"ice block slid"];
-            
-            // next tile becomes ice block
-            next_tile_p = [model_p setIceBlockAt:[next_tile_p pos]];
-            
-            // ice block tile becomes empty; set to new ice block tile
-            prev_tile_p = [model_p setEmptyAt:[prev_tile_p pos]];
-            
-            // move along
-            prev_tile_p = next_tile_p;
-            next_tile_p =
-            [model_p getTileAdjacentToPos:[next_tile_p pos]
-                                           due:dir];
-        }
-        while ( [next_tile_p is_sliding_accessible ] );
-        
-        *ice_block_p_p = (ArcticSlideIceBlock*)prev_tile_p;
-    }
-    return next_tile_p;
-}
-
-- (void)queueTransition:(NSString*)str_p
-{
-    NSLog( @"%@", str_p );
-}
-
-@end
-
-@implementation ArcticSlideTile
-
-- (id)init
-{
-    is_sliding_accessible = NO;
-    is_penguin_accessible = YES;
-    is_blowupable = NO;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (id)initWithPos:(pos_t)initial_pos
-{
-    pos = initial_pos;
-    return [self init];
-}
-
-- (pos_t)pos
-{
-    return self->pos;
-}
-
-- (BOOL) is_sliding_accessible
-{
-    return is_sliding_accessible;
-}
-
-- (BOOL) is_penguin_accessible
-{
-    return is_penguin_accessible;
-}
-
-- (BOOL) is_blowupable
-{
-    return is_blowupable;
-}
-
-- (BOOL) is_crushable
-{
-    return is_crushable;
-}
-
-- (BOOL) is_goal
-{
-    return is_goal;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p
-{
-    // Base class method handles mountain and house;
-    // Peguin can't walk on them or get them sliding
-    // by pushing them
-    [model_p queueTransition:@"can't move immovable object"];
-    
-    // The penguin cannot actually move in this turn
-    return NO;
-}
-
-@end
-
-@implementation ArcticSlideBomb
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = NO;
-    
-    is_blowupable = YES;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p
-{
-    // The penguin has pushed us (a bomb)
-    ArcticSlideBomb *bomb_p = self;
-    ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPos:pos
-                                       due:dir];
-    if ( nil == next_tile_p )
-    {
-        // Bomb is being pushed into edge of board;
-        // maye we queue up a push failure sound effect
-        [model_p queueTransition:@"bomb pushed into edge of world"];
-    }
-    else
-    {
-        // Attempt to slide the bomb; returns tile
-        // that stops the slide (after zero or more
-        // tiles are traversed)
-        next_tile_p = [model_p slideBomb:&bomb_p
-                                     due:dir
-                               withModel:model_p];
-
-        // Special case: bomb can blow up mountain after sliding zero
-        // or more spaces
-        if ( [ next_tile_p is_blowupable ] )
-        {
-            [model_p queueTransition:@"bomb blew up mountain"];
-            
-            // next tile (mountain) becomes empty
-            next_tile_p = [model_p setEmptyAt:[next_tile_p pos]];
-            
-            // bomb tile becomes empty
-            (void)[model_p setEmptyAt:[bomb_p pos]];
-        }
-    }
-
-    // The penguin cannot actually move in this turn
-    return NO;
-}
-
-- (NSString*) description
-{
-    return @"Bomb  ";
-}
-
-@end
-
-@implementation ArcticSlideEmpty
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = YES;
-    // The penguin can walk on this tile
-    is_penguin_accessible = YES;
-
-    is_blowupable = NO;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p
-{
-    // The penguin can traverse an empty tile
-    // TODO: use the model_p to send an update of the penguin
-    // position
-    [model_p queueTransition:@"move penguin"];
-
-    return YES;
-}
-
-- (NSString*) description
-{
-    return @"      ";
-}
-@end
-
-@implementation ArcticSlideHeart
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = NO;
-    
-    is_blowupable = NO;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p
-{
-    // The penguin has pushed us (a heart)
-    ArcticSlideHeart *heart_p = self;
-    ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPos:pos
-                               due:dir];
-    if ( nil == next_tile_p )
-    {
-        // Heart is being pushed into edge of board;
-        // maye we queue up a push failure sound effect
-        [model_p queueTransition:@"heart pushed into edge of world"];
-    }
-    else
-    {
-        // Attempt to slide the heart; returns tile
-        // that stops the slide (after zero or more
-        // tiles are traversed)
-        next_tile_p = [model_p slideHeart:&heart_p
-                                      due:dir
-                                withModel:model_p];
-        // Special case: heart can enter house after sliding zero
-        // or more spaces
-        if ( [ next_tile_p is_goal ] )
-        {
-            [model_p queueTransition:@"heart entered home"];
-            [model_p decrementHeartCount];
-            // House is not changed; heart tile becomes empty
-            (void)[model_p setEmptyAt:[heart_p pos]];
-        }
-    }
-
-    // The penguin cannot actually move in this turn
-    return NO;
-}
-
-- (NSString*) description
-{
-    return @"Heart ";
-}
-
-@end
-
-@implementation ArcticSlideHouse
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = NO;
-    
-    is_blowupable = NO;
-    is_crushable = NO;
-    is_goal = YES;
-    return self;
-}
-
-- (NSString*) description
-{
-    return @"House ";
-}
-@end
-
-@implementation ArcticSlideIceBlock
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = NO;
-    
-    is_blowupable = NO;
-    is_crushable = YES;
-    is_goal = NO;
-    return self;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p
-{
-    // The penguin has pushed us (an ice block) in
-    // the given direction. If we are adjacent
-    // to an empty tile we can slide at least
-    // one tile:
-    ArcticSlideIceBlock *ice_block_p = self;
-    ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPos:pos
-                           due:dir];
-    if ( next_tile_p && [next_tile_p is_sliding_accessible] )
-    {
-        // Attempt to slide the ice block; returns tile
-        // that stops the slide (after zero or more
-        // tiles are traversed)
-        next_tile_p = [model_p slideIceBlock:&ice_block_p
-                                         due:dir
-                                    withModel:model_p];
-        // When it comes to a stop, it just stops; no
-        // special behavior takes place
-    }
-    else
-    {
-        // Ice block is being pushed into edge of board
-        // or a non-slideable tile; this crushes & destroys
-        // the ice block
-        [model_p queueTransition:@"ice block crushed"];
-        (void)[model_p setEmptyAt:[ice_block_p pos]];
-    }
-    
-    // The penguin cannot actually move in this turn
-    return NO;
-}
-
-- (NSString*) description
-{
-    return @"Ice   ";
-}
-
-@end
-
-@implementation ArcticSlideMountain
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = NO;
-    
-    is_blowupable = YES;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (NSString*) description
-{
-    return @"Mtn   ";
-}
-
-@end
-
-@implementation ArcticSlideTree
-
-- (id)init
-{
-    // Sliding things can slide on this tile
-    is_sliding_accessible = NO;
-    // The penguin can walk on this tile
-    is_penguin_accessible = YES;
-    
-    is_blowupable = NO;
-    is_crushable = NO;
-    is_goal = NO;
-    return self;
-}
-
-- (BOOL)pushMeDue:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p;
-{
-    // The penguin can actually walk through trees
-    // come up with a way to represent penguin-over-tree
-    // with alpha or masking?
-    [model_p queueTransition:@"penguin can walk on tile with trees"];
-    return YES;
-}
-
-- (NSString*) description
-{
-    return @"Tree  ";
-}
-@end
-
+@end /* @implementation ArcticSlideModel */
