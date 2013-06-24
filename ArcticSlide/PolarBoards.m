@@ -8,17 +8,6 @@
 
 #import "PolarBoards.h"
 
-const int num_polar_levels = 1;
-const int polar_data_len = 96;
-const int polar_data_max_tile_val = POLAR_DATA_NUM_TILE_VALS - 1;
-const char polar_tile_empty_val = '0';
-const char polar_tile_tree_val = '1';
-const char polar_tile_mountain_val = '2';
-const char polar_tile_house_val = '3';
-const char polar_tile_ice_block_val = '3';
-const char polar_tile_heart_val = '5';
-const char polar_tile_bomb_val = '6';
-
 // Level layouts are taken from the original Macintosh Polar game
 // created by Go Endo. These were originally MacOS resources of
 // type 'STGE.' Let's see if we can decode them. Using ResEdit, the
@@ -114,11 +103,44 @@ const char polar_tile_bomb_val = '6';
 // guessing I can confirm whether this is horizontal offset first
 // or vertical offset first if and when I get to that stage.
 
-const char *polar_levels[POLAR_DATA_NUM_TILE_VALS] =
+const char polar_levels[POLAR_DATA_NUM_LEVELS]
+                       [POLAR_DATA_NUM_TILES] =
 {
-    "100000000000000100000400"
-    "106020545000000000100100"
-    "100000000000000050002300"
-    "110000100000000000000000"
+    {
+        "100000000000000100000400"
+        "106020545000000000100100"
+        "100000000000000050002300"
+        "110000100000000000000000"
+    },
+    {
+        "040000000000000000001022"
+        "450050000046000000000500"
+        "000006000004000000052023"
+        "000000000000000000000000"
+    },
+    {
+        "000200000002000000000001"
+        "054200000002150000002213"
+        "000000024400604000000400"
+        "000000020100000000000020"
+    },
+    {
+        "000000100000000000000040"
+        "000000666400000000000011"
+        "000000000000015050222231"
+        "305050500005051000000011"
+    },
+    {
+        "050500500000002642000623"
+        "050530000000016260500623"
+        "000050060000022610000023"
+        "000000050004004200000223"
+    },
+    {
+        "000001000000110000400013"
+        "155001326251004600000001"
+        "050000060000000401502223"
+        "100041310000000000006021"
+    }
 };
 

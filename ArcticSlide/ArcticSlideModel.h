@@ -73,11 +73,13 @@ static const int board_width = 24, board_height = 4;
 // If we push the penguin in a direction other than the one
 // it is facing, it changes the direction it is facing. If
 // we push it in the same direction, it attempts to walk.
-- (void)penguinMove:(dir_e)dir;
-- (BOOL)penguinPush:(dir_e)dir;
-- (ArcticSlideTile*)getTileAdjacentToPenguin:(dir_e)dir;
-- (ArcticSlideTile*)getTileAdjacentToPosition:(pos_t)pos
-                                  inDirection:(dir_e)dir;
+- (BOOL)penguinPushDue:(dir_e)dir;
+- (void)penguinMoveDue:(dir_e)dir;
+- (void)penguinMoveNTimes:(int)n
+                      due:(dir_e)dir;
+- (ArcticSlideTile*)getTileAdjacentToPenguinDue:(dir_e)dir;
+- (ArcticSlideTile*)getTileAdjacentToPos:(pos_t)pos
+                                     due:(dir_e)dir;
 // Change board to support sliding and destruction of
 // mountains, ice blocks, and hearts
 - (ArcticSlideTile*)setBombAt:(pos_t)pos;
@@ -89,15 +91,15 @@ static const int board_width = 24, board_height = 4;
 // so that we can pass in a type as a paramter to a single slide
 // method.
 - (ArcticSlideTile*)slideBomb:(ArcticSlideBomb**)bomb_p_p
-                        inDir:(dir_e)dir
+                          due:(dir_e)dir
                     withModel:(ArcticSlideModel*)model_p;
 
 - (ArcticSlideTile*)slideHeart:(ArcticSlideHeart**)heart_p_p
-                         inDir:(dir_e)dir
+                           due:(dir_e)dir
                      withModel:(ArcticSlideModel*)model_p;
 
 - (ArcticSlideTile*)slideIceBlock:(ArcticSlideIceBlock**)ice_block_p_p
-                            inDir:(dir_e)dir
+                              due:(dir_e)dir
                         withModel:(ArcticSlideModel*)model_p;
 
 // Temporarily: log queued events
@@ -124,8 +126,8 @@ static const int board_width = 24, board_height = 4;
 - (BOOL) is_blowupable; // can a bomb blow up this tile?
 - (BOOL) is_crushable; // can the penguin slide this tile?
 - (BOOL) is_goal; // is this tile the goal (home) for hearts?
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 @end
 
 @interface ArcticSlideBomb : ArcticSlideTile
@@ -140,16 +142,16 @@ static const int board_width = 24, board_height = 4;
 // It returns YES if the penguin can move onto the tile with
 // this action. This is only ever the case for a tree or empty
 // tile.
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 - (NSString*) description;
 @end
 
 @interface ArcticSlideEmpty : ArcticSlideTile
 // The penguin can always step onto an empty tile
 - (id)init;
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 - (NSString*) description;
 @end
 
@@ -159,8 +161,8 @@ static const int board_width = 24, board_height = 4;
 // all the hearts into the house is how you win the game).
 // Otherwise they cannot be destroyed, and slide like other
 // slidable items.
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 - (NSString*) description;
 @end
 
@@ -182,8 +184,8 @@ static const int board_width = 24, board_height = 4;
 // an object or the edge of the world and stop. If they are pushed
 // directly against an object they will be crushed (there should be
 // an animation) and disappear.
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 - (NSString*) description;
 @end
 
@@ -198,8 +200,8 @@ static const int board_width = 24, board_height = 4;
 // Trees cannot be pushed or destroyed and stop all sliding
 // objects, but the penguin avatar character can walk through
 // them.
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 - (NSString*) description;
 @end
 

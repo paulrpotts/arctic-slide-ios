@@ -25,19 +25,15 @@ pos_t getAdjacentPos( pos_t original_pos, dir_e dir )
     switch ( dir )
     {
         case dir_east:
-            y_offset = 0;
             x_offset = 1;
             break;
         case dir_south:
             y_offset = 1;
-            x_offset = 0;
             break;
         case dir_west:
             x_offset = -1;
-            y_offset = 0;
             break;
         case dir_north:
-            x_offset = 0;
             y_offset = -1;
             break;
         default:
@@ -105,7 +101,7 @@ NSString *dirToString( dir_e dir )
 {
     self = [self init];
     
-    if ( level_idx > ( num_polar_levels - 1) )
+    if ( level_idx > ( POLAR_DATA_NUM_LEVELS - 1) )
     {
         NSLog(@"initWithLevelIndex: bad level_idx %d!\n",
               level_idx);
@@ -161,8 +157,8 @@ NSString *dirToString( dir_e dir )
     
 }
 
-- (ArcticSlideTile*)getTileAdjacentToPosition:(pos_t)pos
-                                  inDirection:(dir_e)dir
+- (ArcticSlideTile*)getTileAdjacentToPos:(pos_t)pos
+                                     due:(dir_e)dir
 {
     pos_t updated_pos = getAdjacentPos(pos, dir);
     if ( posValid( updated_pos ) )
@@ -175,10 +171,10 @@ NSString *dirToString( dir_e dir )
     }
 }
 
-- (ArcticSlideTile*)getTileAdjacentToPenguin:(dir_e)dir
+- (ArcticSlideTile*)getTileAdjacentToPenguinDue:(dir_e)dir
 {
-    return [self getTileAdjacentToPosition:[self penguinPos]
-                               inDirection:dir];
+    return [self getTileAdjacentToPos:[self penguinPos]
+                                       due:dir];
 }
 
 - (NSString*)description
@@ -226,7 +222,29 @@ NSString *dirToString( dir_e dir )
     }
 }
 
-- (void)penguinMove:(dir_e)dir
+- (BOOL)penguinPushDue:(dir_e)dir
+{
+    // Start what could be a cascade of events. Get the
+    // tile the penguin is pushing against and determine
+    // what to do from there.
+    ArcticSlideTile *pushed_tile_p =
+        [self getTileAdjacentToPenguinDue:dir];
+    if ( pushed_tile_p )
+    {
+        NSLog( @"penguinPush: tile at %d, %d pushed",
+              [pushed_tile_p pos].y_idx,
+              [pushed_tile_p pos].x_idx );
+        return [pushed_tile_p pushMeDue:dir
+                              withModel:self ];
+    }
+    else
+    {
+        NSLog(@"penguinPush: useless push against board edge");
+        return NO;
+    }
+}
+
+- (void)penguinMoveDue:(dir_e)dir
 {
     if ( penguinDir != dir )
     {
@@ -238,7 +256,7 @@ NSString *dirToString( dir_e dir )
     {
         NSLog( @"Penguin moving %@",
                dirToString( dir ) );
-        if ( [self penguinPush:penguinDir ] )
+        if ( [self penguinPushDue:penguinDir ] )
         {
             pos_t new_penguin_pos = getAdjacentPos( [self penguinPos], dir );
             [self setPenguinPos:new_penguin_pos];
@@ -253,25 +271,14 @@ NSString *dirToString( dir_e dir )
     }
 }
 
-- (BOOL)penguinPush:(dir_e)dir
+- (void)penguinMoveNTimes:(int)n
+                      due:(dir_e)dir
 {
-    // Start what could be a cascade of events. Get the
-    // tile the penguin is pushing against and determine
-    // what to do from there.
-    ArcticSlideTile *pushed_tile_p =
-        [self getTileAdjacentToPenguin:dir];
-    if ( pushed_tile_p )
+    NSLog( @"penguinMove:%@ nTimes:%d",
+           dirToString( dir ), n );
+    for (int move_count = 0; move_count < n; move_count++ )
     {
-        NSLog( @"penguinPush: tile at %d, %d pushed",
-               [pushed_tile_p pos].y_idx,
-               [pushed_tile_p pos].x_idx );
-        return [pushed_tile_p pushMeInDir:dir
-                                withModel:self ];
-    }
-    else
-    {
-        NSLog(@"penguinPush: useless push against board edge");
-        return NO;
+        [ self penguinMoveDue:dir ];
     }
 }
 
@@ -310,13 +317,13 @@ NSString *dirToString( dir_e dir )
 // Call to initiate a slide, updating the board as we go;
 // returns the tile that stops the slide; updates bomb
 - (ArcticSlideTile*)slideBomb:(ArcticSlideBomb**)bomb_p_p
-                        inDir:(dir_e)dir
+                          due:(dir_e)dir
                     withModel:(ArcticSlideModel*)model_p
 {
     ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*bomb_p_p;
     ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPosition:[*bomb_p_p pos]
-                               inDirection:dir];
+        [model_p getTileAdjacentToPos:[*bomb_p_p pos]
+                                       due:dir];
 
     if ( [next_tile_p is_sliding_accessible ] )
     {
@@ -333,8 +340,8 @@ NSString *dirToString( dir_e dir )
             // move along
             prev_tile_p = next_tile_p;
             next_tile_p =
-            [model_p getTileAdjacentToPosition:[next_tile_p pos]
-                                   inDirection:dir];
+            [model_p getTileAdjacentToPos:[next_tile_p pos]
+                                           due:dir];
         }
         while ( [next_tile_p is_sliding_accessible ] );
 
@@ -346,13 +353,13 @@ NSString *dirToString( dir_e dir )
 // Call to initiate a slide, updating the board as we go;
 // returns the tile that stops the slide; updates heart
 - (ArcticSlideTile*)slideHeart:(ArcticSlideHeart**)heart_p_p
-                        inDir:(dir_e)dir
+                           due:(dir_e)dir
                     withModel:(ArcticSlideModel*)model_p
 {
     ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*heart_p_p;
     ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPosition:[*heart_p_p pos]
-                           inDirection:dir];
+    [model_p getTileAdjacentToPos:[*heart_p_p pos]
+                                   due:dir];
     
     if ( [next_tile_p is_sliding_accessible ] )
     {
@@ -369,8 +376,8 @@ NSString *dirToString( dir_e dir )
             // move along
             prev_tile_p = next_tile_p;
             next_tile_p =
-            [model_p getTileAdjacentToPosition:[next_tile_p pos]
-                                   inDirection:dir];
+            [model_p getTileAdjacentToPos:[next_tile_p pos]
+                                           due:dir];
         }
         while ( [next_tile_p is_sliding_accessible ] );
         
@@ -382,13 +389,13 @@ NSString *dirToString( dir_e dir )
 // Call to initiate a slide, updating the board as we go;
 // returns the tile that stops the slide; updates heart
 - (ArcticSlideTile*)slideIceBlock:(ArcticSlideIceBlock**)ice_block_p_p
-                            inDir:(dir_e)dir
+                              due:(dir_e)dir
                         withModel:(ArcticSlideModel *)model_p
 {
     ArcticSlideTile *prev_tile_p = (ArcticSlideTile*)*ice_block_p_p;
     ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPosition:[*ice_block_p_p pos]
-                           inDirection:dir];
+    [model_p getTileAdjacentToPos:[*ice_block_p_p pos]
+                                   due:dir];
     
     if ( [next_tile_p is_sliding_accessible ] )
     {
@@ -405,8 +412,8 @@ NSString *dirToString( dir_e dir )
             // move along
             prev_tile_p = next_tile_p;
             next_tile_p =
-            [model_p getTileAdjacentToPosition:[next_tile_p pos]
-                                   inDirection:dir];
+            [model_p getTileAdjacentToPos:[next_tile_p pos]
+                                           due:dir];
         }
         while ( [next_tile_p is_sliding_accessible ] );
         
@@ -470,8 +477,8 @@ NSString *dirToString( dir_e dir )
     return is_goal;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-        withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p
 {
     // Base class method handles mountain and house;
     // Peguin can't walk on them or get them sliding
@@ -499,14 +506,14 @@ NSString *dirToString( dir_e dir )
     return self;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p
 {
     // The penguin has pushed us (a bomb)
     ArcticSlideBomb *bomb_p = self;
     ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPosition:pos
-                               inDirection:dir];
+        [model_p getTileAdjacentToPos:pos
+                                       due:dir];
     if ( nil == next_tile_p )
     {
         // Bomb is being pushed into edge of board;
@@ -519,7 +526,7 @@ NSString *dirToString( dir_e dir )
         // that stops the slide (after zero or more
         // tiles are traversed)
         next_tile_p = [model_p slideBomb:&bomb_p
-                                   inDir:dir
+                                     due:dir
                                withModel:model_p];
 
         // Special case: bomb can blow up mountain after sliding zero
@@ -562,8 +569,8 @@ NSString *dirToString( dir_e dir )
     return self;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p
 {
     // The penguin can traverse an empty tile
     // TODO: use the model_p to send an update of the penguin
@@ -594,14 +601,14 @@ NSString *dirToString( dir_e dir )
     return self;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p
 {
     // The penguin has pushed us (a heart)
     ArcticSlideHeart *heart_p = self;
     ArcticSlideTile *next_tile_p =
-        [model_p getTileAdjacentToPosition:pos
-                               inDirection:dir];
+        [model_p getTileAdjacentToPos:pos
+                               due:dir];
     if ( nil == next_tile_p )
     {
         // Heart is being pushed into edge of board;
@@ -614,7 +621,7 @@ NSString *dirToString( dir_e dir )
         // that stops the slide (after zero or more
         // tiles are traversed)
         next_tile_p = [model_p slideHeart:&heart_p
-                                    inDir:dir
+                                      due:dir
                                 withModel:model_p];
         // Special case: heart can enter house after sliding zero
         // or more spaces
@@ -674,8 +681,8 @@ NSString *dirToString( dir_e dir )
     return self;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p
 {
     // The penguin has pushed us (an ice block) in
     // the given direction. If we are adjacent
@@ -683,15 +690,15 @@ NSString *dirToString( dir_e dir )
     // one tile:
     ArcticSlideIceBlock *ice_block_p = self;
     ArcticSlideTile *next_tile_p =
-    [model_p getTileAdjacentToPosition:pos
-                           inDirection:dir];
+    [model_p getTileAdjacentToPos:pos
+                           due:dir];
     if ( next_tile_p && [next_tile_p is_sliding_accessible] )
     {
         // Attempt to slide the ice block; returns tile
         // that stops the slide (after zero or more
         // tiles are traversed)
         next_tile_p = [model_p slideIceBlock:&ice_block_p
-                                        inDir:dir
+                                         due:dir
                                     withModel:model_p];
         // When it comes to a stop, it just stops; no
         // special behavior takes place
@@ -753,8 +760,8 @@ NSString *dirToString( dir_e dir )
     return self;
 }
 
-- (BOOL)pushMeInDir:(dir_e)dir
-          withModel:(ArcticSlideModel*)model_p;
+- (BOOL)pushMeDue:(dir_e)dir
+        withModel:(ArcticSlideModel*)model_p;
 {
     // The penguin can actually walk through trees
     // come up with a way to represent penguin-over-tree
