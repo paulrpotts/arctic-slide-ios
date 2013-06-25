@@ -25,6 +25,9 @@
 		DAC0A116175E278C0095A0B9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DAC0A114175E278C0095A0B9 /* InfoPlist.strings */; };
 		DAC0A119175E278C0095A0B9 /* ArcticSlideTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC0A118175E278C0095A0B9 /* ArcticSlideTests.m */; };
 		DAC0A124175E6CE10095A0B9 /* ArcticSlideModel.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */; };
+		DAEACE6217622ACC00D972FE /* PolarBoards.m in Sources */ = {isa = PBXBuildFile; fileRef = DAEACE6117622ACC00D972FE /* PolarBoards.m */; };
+		DAEACE6417622AF900D972FE /* PolarBoards.m in Sources */ = {isa = PBXBuildFile; fileRef = DAEACE6117622ACC00D972FE /* PolarBoards.m */; };
+		DAEACE651762B11F00D972FE /* ArcticSlideModel.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +66,8 @@
 		DAC0A118175E278C0095A0B9 /* ArcticSlideTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ArcticSlideTests.m; sourceTree = "<group>"; };
 		DAC0A122175E6CE10095A0B9 /* ArcticSlideModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArcticSlideModel.h; sourceTree = "<group>"; };
 		DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArcticSlideModel.m; sourceTree = "<group>"; };
+		DAEACE6117622ACC00D972FE /* PolarBoards.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PolarBoards.m; sourceTree = "<group>"; };
+		DAEACE6317622AE200D972FE /* PolarBoards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolarBoards.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,9 +133,11 @@
 				DAC0A0FD175E278C0095A0B9 /* ArcticSlideViewController.m */,
 				DAC0A0FF175E278C0095A0B9 /* ArcticSlideViewController_iPhone.xib */,
 				DAC0A102175E278C0095A0B9 /* ArcticSlideViewController_iPad.xib */,
-				DAC0A0EB175E278C0095A0B9 /* Supporting Files */,
+				DAEACE6317622AE200D972FE /* PolarBoards.h */,
+				DAEACE6117622ACC00D972FE /* PolarBoards.m */,
 				DAC0A122175E6CE10095A0B9 /* ArcticSlideModel.h */,
 				DAC0A123175E6CE10095A0B9 /* ArcticSlideModel.m */,
+				DAC0A0EB175E278C0095A0B9 /* Supporting Files */,
 			);
 			path = ArcticSlide;
 			sourceTree = "<group>";
@@ -284,6 +291,7 @@
 				DAC0A0F5175E278C0095A0B9 /* ArcticSlideAppDelegate.m in Sources */,
 				DAC0A0FE175E278C0095A0B9 /* ArcticSlideViewController.m in Sources */,
 				DAC0A124175E6CE10095A0B9 /* ArcticSlideModel.m in Sources */,
+				DAEACE6217622ACC00D972FE /* PolarBoards.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +300,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAC0A119175E278C0095A0B9 /* ArcticSlideTests.m in Sources */,
+				DAEACE6417622AF900D972FE /* PolarBoards.m in Sources */,
+				DAEACE651762B11F00D972FE /* ArcticSlideModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +484,7 @@
 				DAC0A11E175E278C0095A0B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		DAC0A11F175E278C0095A0B9 /* Build configuration list for PBXNativeTarget "ArcticSlideTests" */ = {
 			isa = XCConfigurationList;
@@ -482,6 +493,7 @@
 				DAC0A121175E278C0095A0B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
